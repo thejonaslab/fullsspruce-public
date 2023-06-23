@@ -1,0 +1,182 @@
+batch_size: 128
+clip_grad_value: 1.0
+dataset_hparams:
+  adj_args:
+    add_identity: false
+    edge_bin: true
+    norm_adj: false
+  feat_vect_args:
+    feat_atomicno: false
+    mmff_atom_types_onehot: false
+exp_data:
+  cv_split:
+    how: morgan_fingerprint_mod
+    mod: 100
+    test:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+    - 21
+    - 22
+    - 23
+    - 24
+    - 25
+    - 26
+    - 27
+    - 28
+    - 29
+    - 30
+    - 31
+    - 32
+    - 33
+    - 34
+    - 35
+    - 36
+    - 37
+    - 38
+    - 39
+    - 40
+    - 41
+    - 42
+    - 43
+    - 44
+    - 45
+    - 46
+    - 47
+    - 48
+    - 49
+    - 50
+    - 51
+    - 52
+    - 53
+    - 54
+    - 55
+    - 56
+    - 57
+    - 58
+    - 59
+    - 60
+    - 61
+    - 62
+    - 63
+    - 64
+    - 65
+    - 66
+    - 67
+    - 68
+    - 69
+    - 70
+    - 71
+    - 72
+    - 73
+    - 74
+    - 75
+    - 76
+    - 77
+    - 78
+    - 79
+    - 80
+    - 81
+    - 82
+    - 83
+    - 84
+    - 85
+    - 86
+    - 87
+    - 88
+    - 89
+    - 90
+    - 91
+    - 92
+    - 93
+    - 94
+    - 95
+    - 96
+    - 97
+    - 98
+    - 99
+  data:
+  - filename: processed_dbs/shifts.nmrshiftdb.128_128_HCONFSPCl_wcharge_1H.dataset.pickle
+    phase: train
+  - filename: processed_dbs/shifts.nmrshiftdb.128_128_HCONFSPCl_wcharge_1H.dataset.pickle
+    phase: test
+  extra_data: []
+  filter_max_n: 0
+loss_params:
+  loss_name: NoUncertainLoss
+  norm: huber
+  scale: 1.0
+max_epochs: 501
+net_name: nets.GraphVertConfigBootstrapWithMultiMax
+net_params:
+  OUT_DIM: 1
+  agg_func: goodmax
+  force_lin_init: true
+  g_feature_n: -1
+  gml_class: GraphMatLayers
+  gml_config:
+    layer_class: GraphMatLayerExpressionWNorm2
+    layer_config:
+      cross_term_agg_func: sum
+      dropout: 0.01
+      norm_by_neighbors: true
+      per_nonlin: null
+      post_agg_nonlin: relu
+      post_agg_norm: layer
+      terms:
+      - diag: false
+        power: 1
+      - diag: true
+        power: 3
+      - diag: false
+        power: 2
+  init_bias: 0.0
+  init_noise: 0.0
+  inner_norm: null
+  input_norm: batch
+  int_d: 256
+  layer_n: 8
+  mixture_n: 10
+  mixture_num_obs_per: 5
+  out_std: false
+  out_std_exp: false
+  resnet: true
+  resnet_blocks:
+  - 3
+  resnet_d: 128
+  resnet_out: true
+  use_random_subsets: false
+opt_params:
+  eps: 1.0e-08
+  lr: 0.0005
+  optimizer: adam
+  scheduler_gamma: 0.9
+  scheduler_step_size: 10
+pred_config:
+  vert:
+  - data_field: spect_dict
+    index: 0
+seed: 1234
+tblogdir: tblogs.baseline
+tgt_max_n: 128
+validate_config:
+  shift_uncertain_validate:
+    fields:
+    - 1H

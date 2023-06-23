@@ -1,0 +1,126 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@0.2.1
+
+commands:
+  preinstall:
+    description:  "Set up system-level packages"
+    steps:
+      - run:
+          name: install linux packages
+          command: |
+            sudo apt-get update
+      - checkout
+            
+  setup_conda:
+    description: install anaconda
+    steps:
+      - run:
+          name: install conda
+          command: |
+            if test -d $HOME/miniconda; then
+              echo "using cache"
+            else
+              wget https://repo.continuum.io/miniconda/Miniconda3-py39_4.10.3-Linux-x86_64.sh -O miniconda.sh
+              bash miniconda.sh -b -p $HOME/miniconda
+              export PATH="$HOME/miniconda/bin:$PATH"
+              conda config --set always_yes yes --set changeps1 no
+              # useful for debugging
+              conda info -a
+              echo 'export PATH=$HOME/miniconda/bin:$PATH' >> $BASH_ENV
+              conda init bash
+              echo "installing mamba"
+              conda install "mamba>=0.23.3" -n base -c conda-forge
+            fi
+
+            
+  create_conda_env:
+    description: Create the conda environment we're going to use
+    steps:
+      - run:
+          name: conda environment create
+          command: |
+            if test -d $HOME/miniconda/envs/test-environment; then
+                echo "using cache"
+            else
+               cat ~/.bashrc
+               . ~/.bashrc
+               . ~/miniconda/etc/profile.d/conda.sh
+               printenv
+               mamba env create -v -n test-environment -f environment.yml
+               conda activate test-environment
+               which python
+            python -c "import numba" # debugging 
+            fi            
+  install_our_package:
+    description: install our package
+    steps:
+      - run:
+          name: install nmr-forward via setup.py
+          command: |
+            . ~/.bashrc
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate test-environment
+            python setup.py install
+            
+  get_and_install_vonmises:
+    description: install vonmises dependency
+    steps:
+      - run: 
+          name: clone vonmises repo
+          command: |
+            git clone https://github.com/thejonaslab/conformation-vonmises.git
+      - run:
+          name: install von mises
+          command: |
+            . ~/.bashrc
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate test-environment
+            cd conformation-vonmises
+            mamba env update --file environment.yml 
+            python setup.py install
+
+
+  run_tests:
+    description: run pytests
+    steps:
+      - run:
+          name: Run the tests
+          command: |
+              . ~/.bashrc
+              . ~/miniconda/etc/profile.d/conda.sh
+              conda activate test-environment
+              cd tests
+              mkdir test-results
+              pytest --junitxml=test-results/junit.xml
+      - store_test_results:
+          path: tests/test-results
+      - store_artifacts:
+          path: tests/test-results
+            
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/python:3.10.1
+    resource_class: xlarge
+    steps:
+      - checkout
+      - preinstall
+      - restore_cache:
+          keys:
+            - deps1-{{ .Branch }}-{{ checksum "environment.yml" }}
+      - setup_conda
+      - create_conda_env
+      - save_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "environment.yml" }}
+          paths:
+            - "~/miniconda"
+      - install_our_package
+      # - get_and_install_vonmises
+      - run_tests
+      
+workflows:
+  main:
+    jobs:
+      - build-and-test

@@ -1,0 +1,197 @@
+exp_data:
+  ds_class: MoleculeDatasetPartite
+  data :
+    - filename: 'processed_dbs/coupling.coupling_128_128_HCONFSPCl_wcharge.shifts.dataset.pickle'
+      phase: train
+      filter_max_n : 32
+    - filename: 'processed_dbs/coupling.coupling_128_128_HCONFSPCl_wcharge.shifts.dataset.pickle'
+      phase: test
+      filter_max_n : 32
+
+
+  extra_data : []
+  filter_max_n: 0
+  cv_split :
+    how: morgan_fingerprint_mod
+    mod : 10
+    test : [0, 1]
+
+
+pred_config:
+  edge:
+    - data_field: coupling_dict
+    
+validate_config:
+  coupling_uncertain_validate:
+    coupling_index: 0
+    coupling_lut:
+      - ['CH', 1]
+      - ['HH', 2]
+      - ['HH', 3]
+      - ['HH', 4]
+      - ['HH', 5]
+      - ['CH', 2]
+      - ['CH', 3]
+      
+
+tblogdir: tblogs.coupling
+checkpoint_every: 500
+    
+net_name: coupling.CouplingUncertainty
+
+net_params:
+  init_noise : 0.0
+  init_bias: 0.0
+  resnet : True
+  int_d :  256
+  layer_n : 1
+  agg_func : goodmax
+  gml_class: GraphMatLayers
+  gml_config:
+    layer_class: GraphMatLayerExpressionWNorm2
+    layer_config:
+      dropout: 0.0
+      per_nonlin: null
+      post_agg_nonlin: relu
+      post_agg_norm: layer
+      norm_by_neighbors: True
+      cross_term_agg_func: sum
+      terms:
+        -
+          power: 1
+          diag: False
+        -
+          power: 3
+          diag: True
+        -
+          power: 2
+          diag: False
+  force_lin_init : True
+  g_feature_n : -1
+  resnet_out : True
+  out_std : False
+  inner_norm : null
+  input_norm : null
+  input_norm_e: null
+  resnet_blocks : [3,]
+  resnet_d: 128
+  mixture_n: 10
+  mixture_num_obs_per: 5
+  out_std_exp : False
+  OUT_DIM : 1 # update
+  use_random_subsets: False
+  embed_edge: True
+  embed_vert: True
+  decode_class : seminets.Decode14
+  decode_config:
+    D: 256
+    out_transform: null
+    output_feat: 256
+    input_dropout_p: 0.01
+    e_to_v_func: mean
+    steps: 8
+    int_e_dropout_p : 0.0
+    int_v_dropout_p : 0.0
+    #e_cell_per_step: True
+    #v_cell_per_step: True
+    e_norm : batch
+    v_norm : batch
+    raw_e_out : True
+
+
+
+batch_size: 1
+
+tgt_max_n: 260
+
+#clip_grad_value : 1.0e-4
+
+
+opt_params:
+  optimizer : adam 
+  lr : 1.0e-3
+  scheduler_gamma : 0.9
+  eps : 1.0e-9
+  scheduler_step_size : 10
+  #weight_decay: 1.0e-3
+    
+seed : 1234
+
+dataset_hparams:
+  metafile: 'distance_features/nmrshiftdb_PT_distances.meta.pickle'
+  feat_vect_args:
+    mmff_atom_types_onehot : True
+    feat_atomicno: False
+    electronegativity: True
+    chirality: True
+    #DEBUG_fchl: True
+    
+  adj_args:
+    add_identity: True
+    norm_adj: True
+    feat_distances: True
+    distances_from_file: 'distance_features/nmrshiftdb_PT_distances.pickle'
+    distance_feature_func: 'inv'
+
+  coupling_args:
+    compute_coupling: True
+    coupling_lut:
+      - ['CH', 1]
+      - ['HH', 2]
+      - ['HH', 3]
+      - ['HH', 4]
+  feat_bond_args:
+    bond_endpoints: False
+    is_conjugated: True
+    is_in_ring: True
+    stereo: True  
+  feat_edge_args:
+    #feat_distances: True
+    #is_in_ring: True
+    #is_in_ring_size: [3,4,5,6,7,8,9]
+    #add_identity: True
+    #norm_mat: True
+    #columb_mat: False
+    #feat_r_pow: [-1.0, -1.5, -2.0, -2.5, -3.0, -3.5]
+    feat_r_pow: [-1.00, -1.25, -1.50, -1.75, -2.00, -2.25, -2.50, -2.75, -3.00, -3.25, -3.50, -3.75, -4.00, -4.25, -4.50, -4.75, -5.00, -5.25, -5.50, -5.75, -6.00, -6.25, -6.50, -6.75, -7.00, -7.25, -7.50, -7.75, -8.00, -8.25, -8.50, -8.75, -9.00, -9.25, -9.50, -9.75, ]
+    
+    #feat_r_pow: [-2.0, -2.25, -2.5, -2.75, -3.0, -3.5]
+    # conf_embed_mol: True
+    # conf_opt_mmff: False
+    # conf_opt_uff: True
+           
+    #adj_pow_bin: [2, 3, 4, 5, 6, 7, 8]
+    #adj_pow_scale: [2, 3, 4, 5, 6, 7, 8]
+    # edge_type_tuples:
+    #   - [1, 6]
+    #   - [1, 7]
+    #   - [1, 8]
+    #graph_props_config:
+    #  min_path_length: True
+    #  #bond_path_counts: True
+      
+  other_args:
+    combine_mat_feat_adj: True
+    #allow_cache: False
+    
+loss_params:
+  loss_name : CouplingLoss
+  shift_norm : huber
+  shift_scale : 1.0
+  shift_loss_weight: 0.0
+  coupling_loss_weight : 1.0
+  coupling_loss_name: nn.SmoothL1Loss
+
+max_epochs: 501
+
+passthroughs:
+  coupling_types_encoded:
+    func: coupling_types
+    coupling_types_lut:
+      - ['CH', 1]
+      - ['HH', 2]
+      - ['HH', 3]
+      - ['HH', 4]
+      - ['HH', 5]
+      - ['CH', 2]
+      - ['CH', 3]

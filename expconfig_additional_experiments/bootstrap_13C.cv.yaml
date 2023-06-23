@@ -1,0 +1,20 @@
+
+baseconfig: expconfig/bootstrap_13C.yaml
+
+cv_sets:
+  -
+    subsets: [0, 1]
+    GPU: 1
+  -
+    subsets: [2, 3]
+    GPU: 2
+  -
+    subsets: [4, 5]
+    GPU: 3
+  -
+    subsets: [6, 7]
+    GPU: 4
+  -
+    subsets: [8, 9]
+    GPU: 5
+    

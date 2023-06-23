@@ -1,0 +1,113 @@
+exp_data:
+  data :
+    - filename: 'processed_dbs/nmrshiftdb_128_128_HCONFSPCl_wcharge_1H.shifts.dataset.pickle'
+      phase: train
+      extra_features:
+        - filename: distance_features/nmrshiftdb_PT_distances_means.pickle
+          field : mean_distance_mat
+    - filename: 'processed_dbs/nmrshiftdb_128_128_HCONFSPCl_wcharge_1H.shifts.dataset.pickle'
+      phase: test
+      extra_features:
+        - filename: distance_features/nmrshiftdb_PT_distances_means.pickle
+          field : mean_distance_mat
+
+  extra_data : []
+  filter_max_n: 0
+  cv_split :
+    how: morgan_fingerprint_mod
+    mod : 10
+    test : [0, 1]
+
+tblogdir: tblogs.baseline
+
+pred_config:
+  vert:
+    - data_field: spect_dict
+      index: 0 
+
+validate_config:
+  shift_uncertain_validate:
+    fields:
+      - 1H
+
+net_name: nets.GraphVertConfigBootstrapWithMultiMax
+
+net_params:
+  init_noise : 0.0
+  init_bias: 0.0
+  resnet : True
+  int_d :  256 
+  layer_n : 8 
+  agg_func : sum
+  gml_class: GraphMatLayers
+  gml_config:
+    layer_class: GraphMatLayerExpressionWNorm2
+    layer_config:
+      dropout: 0.01
+      per_nonlin: null
+      post_agg_nonlin: relu
+      post_agg_norm: layer
+      norm_by_neighbors: True
+      cross_term_agg_func: sum
+      terms:
+        -
+          power: 1
+          diag: False
+        -
+          power: 3
+          diag: True
+        -
+          power: 2
+          diag: False
+
+  force_lin_init : True 
+  g_feature_n : -1 
+  resnet_out : True 
+  out_std : False 
+  inner_norm : null
+  input_norm : batch
+  resnet_blocks : [3,]
+  resnet_d: 128
+  mixture_n: 10
+  mixture_num_obs_per: 5
+  out_std_exp : False 
+  OUT_DIM : 1 # update
+  use_random_subsets: False
+
+batch_size: 32
+
+tgt_max_n: 128
+
+opt_params:
+  optimizer : adam 
+  lr : 1.0e-3
+  scheduler_gamma : 0.95
+  eps : 1.0e-8 
+  scheduler_step_size : 4
+  
+clip_grad_value : 1.0e-4
+    
+seed : 1234
+
+dataset_hparams:
+  use_default: True
+  feat_vect_args:
+    mmff_atom_types_onehot : False
+    feat_atomicno: False
+  adj_args:
+    add_identity: False
+    norm_adj: False
+  feat_mol_geom_args:
+    feat_distances: True
+    distance_feature_func: 'inv'
+    feat_r_pow: [-1.0, -1.2, -1.4, -1.8, -2.0, -2.2, -2.4, -2.8]
+  other_args:
+    combine_mat_feat_adj: True
+
+
+loss_params:
+  loss_name : NoUncertainLoss
+  norm : huber
+  scale : 1.0
+
+max_epochs: 501

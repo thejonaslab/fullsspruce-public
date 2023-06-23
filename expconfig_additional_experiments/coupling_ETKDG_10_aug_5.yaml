@@ -1,0 +1,201 @@
+exp_data:
+  data :
+    - filename: processed_dbs/couplings.128_128_HCONFSPCl_wcharge_ch3avg.augment_ETKDG_10.dataset.pickle
+      phase: train
+      #subsample_to: 1000
+      filter_max_n : 32
+      extra_features:
+        - filename: distance_features/nmrshiftdb_ETKDG_10_augment_5_distances_means.pickle
+          field : mean_distance_mat
+        - filename: distance_features/nmrshiftdb_ETKDG_10_augment_5_angles_mat.pickle
+          field : mean_angle_mat
+        - filename: distance_features/nmrshiftdb_ETKDG_10_augment_5_gauss_bins_default.pickle
+          field : conf_gauss_bins
+    - filename: processed_dbs/couplings.128_128_HCONFSPCl_wcharge_ch3avg.augment_ETKDG_10.dataset.pickle
+      phase: test
+      filter_max_n : 32
+      extra_features:
+        - filename: distance_features/nmrshiftdb_ETKDG_10_augment_5_distances_means.pickle
+          field : mean_distance_mat
+        - filename: distance_features/nmrshiftdb_ETKDG_10_augment_5_angles_mat.pickle
+          field : mean_angle_mat
+        - filename: distance_features/nmrshiftdb_ETKDG_10_augment_5_gauss_bins_default.pickle
+          field : conf_gauss_bins
+
+  extra_data : []
+  filter_max_n: 0
+  cv_split :
+    how: morgan_fingerprint_mod
+    mod : 10
+    test : [0, 1]
+
+
+DATALOADER_NUM_WORKERS: 0
+
+pred_config:
+  edge:
+    - data_field: coupling_dict
+    
+validate_config:
+  coupling_uncertain_validate:
+    coupling_index: 0
+    run_every: 10
+    coupling_lut:
+      - ['CH', 1]
+      - ['HH', 2]
+      - ['HH', 3]
+      - ['HH', 4]
+      - ['HH', 5]
+      - ['CH', 2]
+      - ['CH', 3]
+      - ['CC', 1]
+      - ['CC', 2]
+      - ['CC', 3]
+      
+  coupling_validate_loss:
+    foo: null
+
+tblogdir: tblogs.coupling
+checkpoint_every: 50
+    
+net_name: coupling.CouplingUncertainty
+
+net_params:
+  init_noise : 0.0
+  init_bias: 0.0
+  resnet : True
+  int_d :  256
+  layer_n : 1
+  agg_func : goodmax
+  gml_class: GraphMatLayers
+  gml_config:
+    layer_class: GraphMatLayerExpressionWNorm2
+    layer_config:
+      dropout: 0.0
+      per_nonlin: null
+      post_agg_nonlin: relu
+      post_agg_norm: layer
+      norm_by_neighbors: True
+      cross_term_agg_func: sum
+      terms:
+        -
+          power: 1
+          diag: False
+        -
+          power: 3
+          diag: True
+        -
+          power: 2
+          diag: False
+  force_lin_init : True
+  g_feature_n : -1
+  resnet_out : True
+  out_std : False
+  inner_norm : null
+  input_norm : null
+  input_norm_e: null
+  resnet_blocks : [3,]
+  resnet_d: 128
+  mixture_n: 10
+  mixture_num_obs_per: 5
+  out_std_exp : False
+  OUT_DIM : 1 # update
+  use_random_subsets: False
+  embed_edge: True
+  embed_vert: True
+  final_use_softmax: sigmoid
+  coupling_output_kinds: 12
+  decode_class : seminets.Decode14
+  decode_config:
+    D: 256
+    out_transform: null
+    output_feat: 256
+    input_dropout_p: 0.10
+    e_to_v_func: mean
+    steps: 8
+    int_e_dropout_p : 0.0
+    int_v_dropout_p : 0.0
+    #e_cell_per_step: True
+    #v_cell_per_step: True
+    e_norm : layer
+    v_norm : layer
+    raw_e_out : True
+    v_combine: prod
+    v_combine_scale : rootd
+
+
+
+batch_size: 48
+
+tgt_max_n: 32
+
+#clip_grad_value : 1.0e-4
+
+
+opt_params:
+  optimizer : adam 
+  lr : 1.0e-3
+  scheduler_gamma : 0.9
+  eps : 1.0e-9
+  scheduler_step_size : 10
+  #weight_decay: 1.0e-3
+  
+seed : 1234
+
+dataset_hparams:
+  feat_vect_args:
+    mmff_atom_types_onehot : True
+    feat_atomicno: False
+    electronegativity: True
+    chirality: True
+    #DEBUG_fchl: True
+    
+  adj_args:
+    add_identity: False
+    norm_adj: False
+
+  coupling_args:
+    compute_coupling: True
+    coupling_lut:
+      - ['CH', 1]
+      - ['HH', 2]
+      - ['HH', 3]
+      - ['HH', 4]
+    
+  feat_mol_geom_args:
+    feat_r_pow: [-1.00, -1.25, -1.50, -1.75, -2.00, -2.25, -2.50, -2.75, -3.00, -3.25, -3.50, -3.75, -4.00, -4.25, -4.50, -4.75, -5.00, -5.25, -5.50, -5.75, -6.00, -6.25, -6.50, -6.75, -7.00, -7.25, -7.50, -7.75, -8.00, -8.25, -8.50, -8.75, -9.00, -9.25, -9.50, -9.75, ]
+    feat_r_gaussian_filters: [[0.5, 0.2],[0.75, 0.2],[1.0, 0.2],[1.25, 0.2],[1.5, 0.2],[1.75, 0.2],[2.0, 0.2],[2.25, 0.2],[2.5, 0.2],[2.75, 0.2],[3.0, 0.2],[3.25, 0.2],[3.5, 0.2],[3.75, 0.2],[4.0, 0.2],[4.25, 0.2],[4.5, 0.2],[4.75, 0.2],[5.0, 0.2],[5.25, 0.2],[5.5, 0.2],[5.75, 0.2],[6.0, 0.2],[6.25, 0.2],[6.5, 0.2],[6.75, 0.2]]
+    feat_angle_gaussian_filters: [[0.0, 0.1], [1.0, 0.1], [3.0, 0.1], [1.70, 0.01], [1.72, 0.01], [1.74, 0.01], [1.76, 0.01], [1.78, 0.01], [1.80, 0.01], [1.82, 0.01], [1.84, 0.01], [1.87, 0.01], [1.89, 0.01], [1.91, 0.01], [1.93, 0.01], [1.95, 0.01], [1.97, 0.01], [1.99, 0.01], [2.01, 0.01], [2.03, 0.01], [2.05, 0.01], [2.07, 0.01], [2.09, 0.01], [2.11, 0.01], [2.13, 0.01], [2.16, 0.01], [2.18, 0.01], [2.20, 0.01], [2.22, 0.01], [2.24, 0.01], [2.26, 0.01], [2.28, 0.01], [2.30, 0.01]]
+    conf_gauss_bins : True
+    
+  other_args:
+    combine_mat_feat_adj: True
+    #allow_cache: False
+    
+loss_params:
+  loss_name: WeightedCouplingLoss
+  shift_norm : huber
+  shift_scale : 1.0
+  shift_loss_weight: 0.0
+  coupling_loss_weight : 1.0
+  coupling_loss_name: nn.SmoothL1Loss
+  coupling_type_weights: [0.0, 0.0, 0.1, 1.0, 1.0, 1.0, 1.0, 0.1, 0.1, 0.1, 0.1, 0.1]
+  
+
+max_epochs: 1001
+
+passthroughs:
+  coupling_types_encoded:
+    func: coupling_types
+    coupling_types_lut:
+      - ['CH', 1]
+      - ['HH', 2]
+      - ['HH', 3]
+      - ['HH', 4]
+      - ['HH', 5]
+      - ['CH', 2]
+      - ['CH', 3]
+      - ['CC', 1]
+      - ['CC', 2]
+      - ['CC', 3]
+      

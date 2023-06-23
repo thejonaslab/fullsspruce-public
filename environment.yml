@@ -1,0 +1,32 @@
+channels:
+  - anaconda
+  - pytorch
+dependencies:
+  - python=3.9
+  - conda-forge::rdkit=2022.03.05
+  - numpy
+  - numba
+  - cython
+  - matplotlib
+  - pytorch>=1.11
+  - torchvision
+  - cudatoolkit=11.3
+  - protobuf=3.19
+  - scipy=1.9.1
+  - pandas
+  - seaborn
+  - scikit-learn
+  - conda-forge::pyarrow
+  - click
+  - pip
+  - pytest
+  - pip:
+    - ruffus
+    - tqdm
+    - networkx
+    - boto3
+    - PyYAML
+    - tensorboard
+    - ruamel.yaml
+    - git+https://github.com/thejonaslab/tinygraph.git
+

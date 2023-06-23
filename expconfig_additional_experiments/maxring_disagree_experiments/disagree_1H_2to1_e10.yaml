@@ -1,0 +1,109 @@
+exp_data:
+  data :
+    - filename: 'processed_dbs/nmrshiftdb.1H.ab_exp_minring5_merged.32_32_128_128_HCONFSPCl_wcharge_eqHavg_ab.pickle'
+      phase: train
+    - filename: 'processed_dbs/nmrshiftdb.1H.ab_exp_minring5_merged.32_32_128_128_HCONFSPCl_wcharge_eqHavg_ab.pickle'
+      phase: test
+
+
+  extra_data : []
+  filter_max_n: 0
+  cv_split :
+    how: morgan_fingerprint_mod
+    mod : 10
+    test : [0, 1]
+
+tblogdir: tblogs.baseline
+
+pred_config:
+  vert:
+    - data_field: spect_dict_ab
+      index: 0 
+    - data_field: spect_dict_exp
+      index: 0 
+
+net_name: nets.GraphVertConfigBootstrapWithMultiMax
+
+validate_config:
+  shift_uncertain_validate:
+    fields:
+      - 1H
+      
+  
+net_params:
+  init_noise : 0.0
+  init_bias: 0.0
+  resnet : True
+  int_d :  256
+  layer_n : 8
+  agg_func : goodmax
+  gml_class: GraphMatLayers
+  gml_config:
+    layer_class: GraphMatLayerExpressionWNorm2
+    layer_config:
+      dropout: 0.01
+      per_nonlin: null
+      post_agg_nonlin: relu
+      post_agg_norm: layer
+      norm_by_neighbors: True
+      cross_term_agg_func: sum
+      terms:
+        -
+          power: 1
+          diag: False
+        -
+          power: 3
+          diag: True
+        -
+          power: 2
+          diag: False
+
+  force_lin_init : True
+  g_feature_n : -1
+  resnet_out : True
+  out_std : False
+  inner_norm : null
+  input_norm : batch
+  resnet_blocks : [3,]
+  resnet_d: 128
+  mixture_n: 10
+  mixture_num_obs_per: 5
+  out_std_exp : False
+  OUT_DIM : 1 # update
+  use_random_subsets: False
+
+batch_size: 128
+
+tgt_max_n: 128
+
+
+opt_params:
+  optimizer : adam 
+  lr : 5.0e-4
+  scheduler_gamma : 0.9
+  eps : 1.0e-8 
+  scheduler_step_size : 10
+  
+clip_grad_value : 1.0e-4
+    
+seed : 1234
+
+dataset_hparams:
+  feat_vect_args:
+    mmff_atom_types_onehot : False
+    feat_atomicno: False
+
+  adj_args:
+    add_identity: False
+    norm_adj: False
+    edge_bin: True
+
+loss_params:
+  loss_name : DisagreementLossOneToTwo
+  norm : huber
+  scale : 1.0
+  disagree_norm: l2
+  lambda_a: 1.0
+  lambda_e: 10.0
+
+max_epochs: 501

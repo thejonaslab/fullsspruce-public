@@ -1,0 +1,14 @@
+checkpoints/
+tblogs.baseline/
+tblogs.coupling/
+distance_features
+processed_dbs
+distance_fs_lcl/
+*__pycache__/
+forward.preds/
+.ruffus_history.sqlite
+notebooks/.ipynb_checkpoints/
+*.egg-info/
+build/
+dist/
+dp4_analyses/
