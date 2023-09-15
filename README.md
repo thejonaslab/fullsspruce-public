@@ -1,6 +1,6 @@
 # FullSSPrUCe
 
-This is the main public repository supporting the paper `Rapid Prediction of Full Spin Systems using Uncertainty-Aware Machine Learning`. In the paper, we describe a new machine learning model for Full Spin System Prediction with UnCertainty (FullSSPrUCe). In this repository, we provide the code which trains and evaluates these models, as well as ways to install and run the models locally. The [paper website](https://spectroscopy.ai/papers/fullsspruce/) also provides an API to run the models via the web.    
+This is the main public repository supporting the paper [Rapid Prediction of Full Spin Systems using Uncertainty-Aware Machine Learning](https://doi.org/10.1039/D3SC01930F). In the paper, we describe a new machine learning model for Full Spin System Prediction with UnCertainty (FullSSPrUCe). In this repository, we provide the code which trains and evaluates these models, as well as ways to install and run the models locally. The [paper website](https://spectroscopy.ai/papers/fullsspruce/) also provides an API to run the models via the web.    
 
 To modify existing models or train your own, see [the tutorial](fullsspruce/) for a more detailed explanation of how to get up and running with training a model. 
 
